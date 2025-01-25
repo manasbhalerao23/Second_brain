@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
-export const JWT_SECRET = "manas123";
-
-mongoose.connect("mongodb+srv://manasbhalerao23:53cqN1YLFhJFS5Fp@cluster0.ykbrx.mongodb.net/Second_brain");
+export const JWT_SECRET = process.env.JWT_SECRET;
+const DB_URL = process.env.DB_URL;
+mongoose.connect(DB_URL as string);
 
 

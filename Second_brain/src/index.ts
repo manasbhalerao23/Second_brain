@@ -56,7 +56,7 @@ app.post("/api/v1/signin", async (req, res) => {
             if(User && check){
                 const token = jwt.sign({
                     id: User._id.toString(),
-                }, JWT_SECRET);
+                }, JWT_SECRET as string);
                 res.status(200).json({
                     message: "signed in",
                     token
