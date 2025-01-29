@@ -23,10 +23,17 @@ export function Signin(){
         localStorage.setItem('token', jwt);
         navigate("/dashboard");
     }
-    return <div className="h-screen w-screen bg-gray-200 flex justify-center items-center">
-        <div className="bg-white rounded-xl border min-w-48 p-8">
+    return <div className="bg-black-100 h-screen w-screen bg-black flex justify-center items-center">
+        <div className="bg-black-50 border-black-50 rounded-xl border w-1/4 p-8 h-2/3">
+            <div className="justify-items-center text-white">
+            <h1>
+                Login Here
+            </h1>
+            </div>
+            <div className="">
             <Input reference={usernameRef} placeholder="Username"/>
             <Input reference={passwordRef} placeholder="Password"/>
+            </div>
             <div className="flex justify-center p-4">
             <Button onclick={signin} variant="primary" text={"Signin"}/>
             </div>

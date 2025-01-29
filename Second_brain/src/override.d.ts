@@ -10,4 +10,10 @@ declare global {
     interface JwtPayLoad {
         id: string
     }
+    namespace NodeJS{
+      export interface ProcessEnv{
+        DB_URL: string,
+        JWT_SECRET: string
+      }
+    }
 }

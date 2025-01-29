@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import { JWT_SECRET } from "./config";
+import { JWT_SECRET } from "./index";
 import jwt from "jsonwebtoken"
 
 
 export const userMiddleware = (req: Request, res: Response, next: NextFunction) => {
         const token = req.headers.authorization;
         //use cookies
-        const decoded = jwt.verify(token as string, JWT_SECRET as string) as unknown as JwtPayLoad;
+        const decoded = jwt.verify(token as string, JWT_SECRET ) as unknown as JwtPayLoad;
         if(decoded){
             req.userId = decoded.id;
             next();

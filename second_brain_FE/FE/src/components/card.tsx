@@ -1,5 +1,6 @@
 import { TwitterTweetEmbed } from "react-twitter-embed";
 import { ShareIcon } from "../icons/shareicon";
+import { Link } from "react-router-dom";
 
 export function Card({type, title, link}: {
     type: "Youtube" | "Twitter";
@@ -12,17 +13,13 @@ export function Card({type, title, link}: {
         <div className="p-8 bg-white rounded-md border-gray-200 max-w-72 border">
             <div className="flex justify-between">
                 <div className="flex items-center font-medium">
-                    <div className="text-gray-500 pr-2">
-                        <ShareIcon/>
-                    </div>
                     {title}
                 </div>
                 <div className="flex items-center">
-                    <div className="pr-2 text-gray-500">
-                        <ShareIcon/>
-                    </div>
-                    <div className="pr-2 text-gray-500">
-                        <ShareIcon/>
+                    <div className="pr-2 text-gray-500" >
+                        <Link to={link}>
+                            <ShareIcon/>
+                        </Link>
                     </div>
                 </div>
             </div>

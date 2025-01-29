@@ -12,14 +12,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.JWT_SECRET = void 0;
 const express_1 = __importDefault(require("express"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const db_1 = require("./db");
-const config_1 = require("./config");
 const middleware_1 = require("./middleware");
 const utils_1 = require("./utils");
 const cors_1 = __importDefault(require("cors"));
+const mongoose_1 = __importDefault(require("mongoose"));
+const dotenv_1 = require("dotenv");
+(0, dotenv_1.configDotenv)();
+exports.JWT_SECRET = process.env.JWT_SECRET;
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use((0, cors_1.default)());
@@ -61,7 +65,7 @@ app.post("/api/v1/signin", (req, res) => __awaiter(void 0, void 0, void 0, funct
             if (User && check) {
                 const token = jsonwebtoken_1.default.sign({
                     id: User._id.toString(),
-                }, config_1.JWT_SECRET);
+                }, exports.JWT_SECRET);
                 res.status(200).json({
                     message: "signed in",
                     token
@@ -75,6 +79,7 @@ app.post("/api/v1/signin", (req, res) => __awaiter(void 0, void 0, void 0, funct
         }
     }
     catch (e) {
+        console.log(e);
         res.status(500).json({
             message: "internal server error"
         });
@@ -178,4 +183,10 @@ app.get("/api/v1/brain/:shareLink", (req, res) => __awaiter(void 0, void 0, void
         content: content
     });
 }));
-app.listen(3000);
+function main() {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield mongoose_1.default.connect(process.env.DB_URL);
+        app.listen(3000);
+    });
+}
+main();

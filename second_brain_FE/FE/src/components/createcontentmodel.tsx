@@ -32,15 +32,15 @@ export function CreateContentModel({open, onclose}: {
         onclose();
     }
     return <div>
-            {open && <div className="w-screen h-screen bg-slate-500 fixed top-0 left-0 opacity-60 flex justify-center">
-                <div className="flex flex-col justify-center">
-                    <span className="bg-white opacity-100 p-4 rounded">
+            {open && <div className="bg-opacity-65 w-screen h-screen bg-slate-500 fixed top-0 left-0 flex justify-center">
+                <div className="flex flex-col justify-center ">
+                    <span className="bg-white p-4 rounded">
                         <div className="flex justify-end">
                             <div onClick={onclose} className="cursor-pointer">
                             <CrossIcon/>
                             </div>
                         </div>
-                        <div>
+                        <div className="">
                             <Input reference={titleRef} placeholder={"Title"}/>
                             <Input reference={linkRef} placeholder={"Link"}/>
                         </div>

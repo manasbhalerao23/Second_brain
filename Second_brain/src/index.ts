@@ -3,10 +3,14 @@ import jwt from "jsonwebtoken";
 import {z} from "zod";
 import bcrypt from "bcrypt";
 import { ContentModel, LinkModel, UserModel } from "./db";
-import { JWT_SECRET } from "./config";
 import { userMiddleware } from "./middleware";
 import { random } from "./utils";
 import cors from "cors";
+import mongoose from "mongoose";
+import { configDotenv } from "dotenv";
+configDotenv();
+
+export const JWT_SECRET = process.env.JWT_SECRET;
 
 const app = express();
 app.use(express.json());
@@ -56,7 +60,7 @@ app.post("/api/v1/signin", async (req, res) => {
             if(User && check){
                 const token = jwt.sign({
                     id: User._id.toString(),
-                }, JWT_SECRET as string);
+                }, JWT_SECRET);
                 res.status(200).json({
                     message: "signed in",
                     token
@@ -70,6 +74,7 @@ app.post("/api/v1/signin", async (req, res) => {
         }    
     }
     catch(e){
+        console.log(e);
         res.status(500).json({
             message: "internal server error"
         })
@@ -183,5 +188,9 @@ app.get("/api/v1/brain/:shareLink", async (req, res) => {
     })
 })
 
+async function main() {
+    await mongoose.connect(process.env.DB_URL as string);
+    app.listen(3000);
+}
 
-app.listen(3000);
+main();
