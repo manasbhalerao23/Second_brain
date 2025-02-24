@@ -7,17 +7,19 @@ exports.userMiddleware = void 0;
 const index_1 = require("./index");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const userMiddleware = (req, res, next) => {
-    const token = req.headers.authorization;
-    //use cookies
-    const decoded = jsonwebtoken_1.default.verify(token, index_1.JWT_SECRET);
-    if (decoded) {
+    const token = req.cookies["token"];
+    console.log(token);
+    if (!token) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+    }
+    try {
+        const decoded = jsonwebtoken_1.default.verify(token, index_1.JWT_SECRET);
         req.userId = decoded.id;
         next();
     }
-    else {
-        res.status(403).json({
-            message: "you are not logged in"
-        });
+    catch (e) {
+        res.status(401).json({ error: "Invalid token." });
     }
 };
 exports.userMiddleware = userMiddleware;

@@ -21,12 +21,20 @@ const middleware_1 = require("./middleware");
 const utils_1 = require("./utils");
 const cors_1 = __importDefault(require("cors"));
 const mongoose_1 = __importDefault(require("mongoose"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const dotenv_1 = require("dotenv");
 (0, dotenv_1.configDotenv)();
 exports.JWT_SECRET = process.env.JWT_SECRET;
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
-app.use((0, cors_1.default)());
+app.use((0, cookie_parser_1.default)());
+app.use((0, cors_1.default)({
+    origin: [
+        "http://localhost:5174",
+    ],
+    methods: ["GET", "POST", "DELETE", "OPTIONS"],
+    credentials: true,
+}));
 app.post("/api/v1/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const username = req.body.username;
     const password = req.body.password;
@@ -36,9 +44,17 @@ app.post("/api/v1/signup", (req, res) => __awaiter(void 0, void 0, void 0, funct
     // password.z.string().min(4).max(10);
     const hashedpassword = yield bcrypt_1.default.hash(password, 7);
     try {
-        yield db_1.UserModel.create({
+        const user = yield db_1.UserModel.create({
             username: username,
             password: hashedpassword
+        });
+        const token = jsonwebtoken_1.default.sign({
+            id: user._id,
+        }, exports.JWT_SECRET);
+        res.cookie("token", token, {
+            sameSite: "none",
+            secure: true,
+            httpOnly: true,
         });
         res.status(200).json({
             message: "Signed up"
@@ -54,7 +70,6 @@ app.post("/api/v1/signup", (req, res) => __awaiter(void 0, void 0, void 0, funct
 app.post("/api/v1/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const username = req.body.username;
     const password = req.body.password;
-    //use cookies
     const User = yield db_1.UserModel.findOne({
         username: username
     });
@@ -64,11 +79,15 @@ app.post("/api/v1/signin", (req, res) => __awaiter(void 0, void 0, void 0, funct
             const check = yield bcrypt_1.default.compare(password, hashpw);
             if (User && check) {
                 const token = jsonwebtoken_1.default.sign({
-                    id: User._id.toString(),
+                    id: User._id,
                 }, exports.JWT_SECRET);
-                res.status(200).json({
-                    message: "signed in",
-                    token
+                res.cookie("token", token, {
+                    sameSite: "none",
+                    secure: true,
+                    httpOnly: true,
+                });
+                //check for https in prod
+                res.status(200).json({ message: "Signed in success"
                 });
             }
             else {
@@ -136,6 +155,7 @@ app.post("/api/v1/brain/share", middleware_1.userMiddleware, (req, res) => __awa
             res.json({
                 hash: existinglink.hash
             });
+            return;
         }
         const hashlink = (0, utils_1.random)(12);
         yield db_1.LinkModel.create({

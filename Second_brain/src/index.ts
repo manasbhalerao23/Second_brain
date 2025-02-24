@@ -7,6 +7,7 @@ import { userMiddleware } from "./middleware";
 import { random } from "./utils";
 import cors from "cors";
 import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
 import { configDotenv } from "dotenv";
 configDotenv();
 
@@ -14,7 +15,14 @@ export const JWT_SECRET = process.env.JWT_SECRET;
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cookieParser());
+app.use(cors({
+    origin: [
+        "http://localhost:5174",
+    ],
+    methods: ["GET", "POST", "DELETE", "OPTIONS"],
+    credentials: true,
+}));
 
 
 app.post("/api/v1/signup", async (req, res) => {
@@ -27,12 +35,23 @@ app.post("/api/v1/signup", async (req, res) => {
     // password.z.string().min(4).max(10);
 
     const hashedpassword = await bcrypt.hash(password,7);
-
     try{
-        await UserModel.create({
+        const user = await UserModel.create({
             username: username,
             password: hashedpassword
-        })
+        });
+        const token = jwt.sign(
+            {
+              id: user._id,
+            },
+            JWT_SECRET
+          );
+      
+          res.cookie("token", token, {
+            sameSite: "none",
+            secure: true,
+            httpOnly: true,
+          });
     
         res.status(200).json({
             message: "Signed up"
@@ -49,7 +68,7 @@ app.post("/api/v1/signup", async (req, res) => {
 app.post("/api/v1/signin", async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
-//use cookies
+
     const User = await UserModel.findOne({
         username: username
     });
@@ -58,13 +77,21 @@ app.post("/api/v1/signin", async (req, res) => {
         if(typeof hashpw === 'string'){
             const check = await bcrypt.compare(password, hashpw);
             if(User && check){
+
                 const token = jwt.sign({
-                    id: User._id.toString(),
+                    id: User._id,
                 }, JWT_SECRET);
-                res.status(200).json({
-                    message: "signed in",
-                    token
-                })
+
+                res.cookie("token",token, {
+                    sameSite: "none",
+                    secure: true,
+                    httpOnly: true,
+                  });
+
+                //check for https in prod
+                res.status(200).json({message: "Signed in success"
+                });
+                
             }
             else{
                 res.status(403).json({
@@ -136,6 +163,7 @@ app.post("/api/v1/brain/share", userMiddleware, async (req, res) => {
                 res.json({
                     hash: existinglink.hash
                 })
+                return;
             }
             const hashlink = random(12);
 

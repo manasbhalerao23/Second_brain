@@ -1,35 +1,104 @@
-import { TwitterTweetEmbed } from "react-twitter-embed";
-import { ShareIcon } from "../icons/shareicon";
-import { Link } from "react-router-dom";
+import { memo } from "react";
+import { contentdata } from "../types";
+import axios from "axios";
+import { BACKEND_URL } from "../config";
+import { Clapperboard, FileText, Image, Link2, Trash, Twitter } from "lucide-react";
 
-export function Card({type, title, link}: {
-    type: "Youtube" | "Twitter";
-    title: string;
-    link: string;
-}){
-    const videoID = link.split('v=')[1]?.split('&')[0];
-    const tweetID = link.split('status/')[1];
-    return <div>
-        <div className="p-8 bg-white rounded-md border-gray-200 max-w-72 border">
-            <div className="flex justify-between">
-                <div className="flex items-center font-medium">
-                    {title}
-                </div>
-                <div className="flex items-center">
-                    <div className="pr-2 text-gray-500" >
-                        <Link to={link}>
-                            <ShareIcon/>
-                        </Link>
+const Card = memo(
+    ({content, shared} : {content: contentdata; shared: boolean}) => {
+        async function handledelete () {
+            try{
+                await axios.delete(`${BACKEND_URL}/api/v1/content`,
+                    {
+                        data:{
+                            id: content.id,
+                        },
+                        withCredentials: true
+                    }
+                );
+                window.location.reload();
+            }
+            catch(e){
+                console.log(e);
+            }
+        }
+
+        function getIcon() {
+            switch(content.type){
+                case "Image":
+                    return <Image size={16}/>;
+                case "Video":
+                    return <Clapperboard size={16}/>;
+                case "Tweet":
+                    return <Twitter size={16}/>;
+                case "Document":
+                    return <FileText size={16}/>;
+                case "Link":
+                return <Link2 size={16}/>;
+            }
+        }
+
+        return(
+            <div>
+                <div>
+                    <div>
+                        <p>{getIcon()}</p>
+                        <p>
+                            {content.title}
+                        </p>
                     </div>
+                    {!shared && (<div onClick={handledelete}>
+                        <Trash size={16}/>
+                        </div>)}
+                </div>
+
+                <a
+                target="blank"
+                href={content.link}
+                className="">
+                    {content.link}
+                </a>
+
+                {content.type === "Image" && (
+                    <img alt="" src={content.link} className=""/>
+                )}
+
+                {/* check for youtube embed */}
+                {content.type === "Video" && (
+                    <iframe
+                    src={`https://youtube.com/embed/${
+                        content.link.split("https://youtube/")[1]
+                    }`}
+                    className=""/>
+                )}
+
+
+                {content.type === "Tweet" && (
+                    <div className="">
+                        <blockquote
+                        className=""
+                        style={{margin:0}}>
+                            <a
+                            href={`https://twitter.com/x/status/${
+                                content.link.split("/status/")[1]
+                            }`}>
+                            </a>
+                        </blockquote>
+                    </div>
+                )}
+
+                <div>
+                    {content.tags.map((tag,index) => (
+                        <p
+                        key={index}
+                        className="">
+                            {tag}
+                        </p>
+                    ))}
                 </div>
             </div>
-            <div className="pt-8">
-                
-            {type === "Youtube" && <iframe className="w-full" src={`https://www.youtube.com/embed/${videoID}`} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>}
-            
-            {type === "Twitter" && <TwitterTweetEmbed tweetId={tweetID}/>}
-            
-            </div>
-        </div>
-    </div>
-}
+        );
+    }
+);
+
+export default Card;

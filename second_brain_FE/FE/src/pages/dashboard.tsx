@@ -1,53 +1,78 @@
-import { useState } from "react"
-import { Button } from "../components/button"
-import { Card } from "../components/card"
-import { CreateContentModel } from "../components/createcontentmodel"
-import { PlusIcon } from "../icons/plusicon"
-import { ShareIcon } from "../icons/shareicon"
-import { SideBar } from "../components/sidebar"
-import { usecontents } from "../hooks/usecontent"
-import axios from "axios"
-import { BACKEND_URL } from "../config"
-
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { useRecoilValueLoadable } from "recoil";
+import { currentTabContentsf } from "../atoms/contentAtom";
+import { useEffect, useState } from "react";
+import SideBar from "../components/sidebar";
+import CreateContentModel from "../components/createcontentmodel";
+import { contentdata } from "../types";
+import Card from "../components/card";
+import ShareModel from "../components/sharemodel";
+import { CardSkeleton } from "../components/cardSkeleton";
 
 function Dashboard() {
-  const [openmodel, setopenmodel] = useState(false);
-  const contents = usecontents();
+  const navigate = useNavigate();
+  const params = useParams();
+  const contentsState = useRecoilValueLoadable(
+    currentTabContentsf(params.shareId || null)
+  );
+  const [sidebarvisible,setsidebarvisible] = useState(true);
 
-  async function sharebrain(){
-    const response = await axios.post(`${BACKEND_URL}/api/v1/brain/share`,{
-      share: true
-    }, {
-      headers: {
-        Authorization: localStorage.getItem("token")
-      }
-    });
-    const shareurl = `http://localhost:5173/share/${response.data.hashlink}`;
-    await navigator.clipboard.writeText(shareurl);
-    alert("link copied")
-  }
+  useEffect(()=>{
+    if(!localStorage.getItem("isblogin") && !params.shareId){
+      navigate('/');
+    }
+  },[]);
 
-  return (
-    <div >
-      <SideBar/>
-      <div className="p-4 ml-72 min-h-screen bg-gray-100 border-2">
-      <CreateContentModel open={openmodel} onclose={() => {setopenmodel(false);}}/>
-        <div className="justify-end flex gap-4 ">
-          <div className="items-center">
-          <Button onclick={sharebrain} variant="secondary" text="Share Brain" StartIcon={<ShareIcon/>}></Button>
-          </div>
-        <Button onclick={() => {
-            setopenmodel(true);
-          }} variant="primary" text="Add Content" StartIcon={<PlusIcon/>}>
-          </Button>
+
+  return(
+    <main className="min-h-screen flex bg-white text-black-50 font-primary">
+      <SideBar
+      isvisible={sidebarvisible}
+      setisvisible={setsidebarvisible}
+      />
+      <div className="w-full flex flex-col justify-start items-start mx-5 mb-5">
+        <div className="w-full flex flex-col md:flex-row justify-between items-center mb-5">
+          <h1 className="text-3xl font-semibold text-black-50 my-6">
+            {contentsState.contents.username || "Your"} Contents
+          </h1>
+          {params.shareId ? (
+            localStorage.getItem("isblogin") && (
+              <button className="cursor-pointer bg-primary/20 hover: bg-primary-dark border-2 border-primary transition-all duration-200 px-2 py-1 rounded-md text-sm font-medium flex justify-center items-center gap-2">
+                <Link to={'/brain'}>Your Brain</Link>
+              </button>
+            )
+          ) : (
+            <div className="flex justify-center items-center gap-3">
+              <ShareModel/>
+              <CreateContentModel/>
+            </div>
+          )}
         </div>
-        <div className="flex gap-4 flex-wrap">
-          {contents.map(({type, link, title}) => 
-            <Card type={type} title={title} link={link}></Card>)} 
-          </div>
+
+        <div className="w-full grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {contentsState.state === "loading" ? (
+            <>
+            <CardSkeleton/>
+            <CardSkeleton/>
+            <CardSkeleton/>
+            </>
+          ) : contentsState.state === "hasError" ? (
+            <div>error while fetching</div>
+          ): contentsState.contents?.contents?.length === 0 ? (
+            <div>Empty Brain</div>
+          ) : (
+            contentsState.contents?.contents?.map((content: contentdata) => (
+              <Card
+              key={content.id}
+              content={content}
+              shared={params.shareId ? true : false}
+              />
+            ))
+          )}
+        </div>
       </div>
-    </div>
+    </main>
   )
 }
 
-export default Dashboard
+export default Dashboard;
