@@ -2,24 +2,25 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import {z} from "zod";
 import bcrypt from "bcrypt";
-import { ContentModel, LinkModel, UserModel } from "./db";
+import { ContentModel, LinkModel, TagModel, UserModel } from "./db";
 import { userMiddleware } from "./middleware";
 import { random } from "./utils";
 import cors from "cors";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import { configDotenv } from "dotenv";
+import { error } from "console";
+import { title } from "process";
 configDotenv();
 
 export const JWT_SECRET = process.env.JWT_SECRET;
+export const FRONTEND_URL = process.env.FRONTEND_URL;
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin: [
-        "http://localhost:5174",
-    ],
+    origin: [],
     methods: ["GET", "POST", "DELETE", "OPTIONS"],
     credentials: true,
 }));
@@ -109,31 +110,66 @@ app.post("/api/v1/signin", async (req, res) => {
 })
 
 app.post("/api/v1/content", userMiddleware, async (req, res) => {
-    const link = req.body.link;
-    const type = req.body.type;
-    const title = req.body.title;
-    await ContentModel.create({
-        link: link,
-        type: type,
-        title: title,
-        userId: req.userId,
-        tags: []
-    })
-    res.json({
-        message: "content added"
-    })
-})
+    const {link, type, title, tags} = req.body;
+
+    try{
+        const tagIds: string[] = [];
+        await Promise.all(
+            tags.map(async (title: any) => {
+                const tag = await TagModel.findOne({title});
+                if(!tag){
+                    const newtag = await TagModel.create({title});
+                    tagIds.push(newtag._id.toString());
+                    return;
+                }
+                if(tagIds.includes(tag._id.toString())){
+                    return;
+                }
+                tagIds.push(tag._id.toString());
+            })
+        );
+        //console.log("tags done");
+
+        await ContentModel.create({
+            link: link,
+            type: type,
+            title: title,
+            userId: req.userId,
+            tags: tagIds,
+        });
+        // console.log("model done");
+        res.status(200).json({message: "Content added"});
+    }
+    catch(e){
+        console.log(e);
+        res.status(500).json({
+            error: "Error occured"
+        });
+    }
+});
 
 
 app.get("/api/v1/content", userMiddleware, async (req, res) => {
     const userId = req.userId;
-    const content = await ContentModel.find({
+    const contents = await ContentModel.find({
         userId: userId,
-    }).populate("userId", "username");
-    res.json({
-        content
-    })
-})
+    }).populate<{
+        tags: (typeof TagModel.prototype)[];
+    }>("tags");
+
+    const formattedcontent = contents.map((content) => ({
+        id: content._id,
+        type: content.type,
+        link: content.link,
+        title: content.title,
+        tags: content.tags.map((tag) => (tag.title)),
+    }));
+
+
+    res.status(200).json({
+        contents:formattedcontent
+    });
+});
 
 app.delete("/api/v1/content", userMiddleware, async (req, res) => {
     const contentId  = req.body.contentId;
@@ -160,8 +196,9 @@ app.post("/api/v1/brain/share", userMiddleware, async (req, res) => {
                 userId:req.userId
             });
             if(existinglink){
-                res.json({
-                    hash: existinglink.hash
+                
+                res.status(200).json({
+                    link: `${FRONTEND_URL}/brain/${existinglink.hash}`,
                 })
                 return;
             }
@@ -171,8 +208,8 @@ app.post("/api/v1/brain/share", userMiddleware, async (req, res) => {
                 userId: req.userId,
                 hash: hashlink
             })
-            res.json({
-                hashlink
+            res.status(200).json({
+                link:  `${FRONTEND_URL}/brain/${hashlink}`
             })
         }
         else {
@@ -219,6 +256,7 @@ app.get("/api/v1/brain/:shareLink", async (req, res) => {
 async function main() {
     await mongoose.connect(process.env.DB_URL as string);
     app.listen(3000);
+    console.log("Running on 3000");
 }
 
 main();

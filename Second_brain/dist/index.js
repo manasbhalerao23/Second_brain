@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.JWT_SECRET = void 0;
+exports.FRONTEND_URL = exports.JWT_SECRET = void 0;
 const express_1 = __importDefault(require("express"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
@@ -25,13 +25,12 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const dotenv_1 = require("dotenv");
 (0, dotenv_1.configDotenv)();
 exports.JWT_SECRET = process.env.JWT_SECRET;
+exports.FRONTEND_URL = process.env.FRONTEND_URL;
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 app.use((0, cors_1.default)({
-    origin: [
-        "http://localhost:5174",
-    ],
+    origin: [],
     methods: ["GET", "POST", "DELETE", "OPTIONS"],
     credentials: true,
 }));
@@ -105,27 +104,53 @@ app.post("/api/v1/signin", (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 }));
 app.post("/api/v1/content", middleware_1.userMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const link = req.body.link;
-    const type = req.body.type;
-    const title = req.body.title;
-    yield db_1.ContentModel.create({
-        link: link,
-        type: type,
-        title: title,
-        userId: req.userId,
-        tags: []
-    });
-    res.json({
-        message: "content added"
-    });
+    const { link, type, title, tags } = req.body;
+    try {
+        const tagIds = [];
+        yield Promise.all(tags.map((title) => __awaiter(void 0, void 0, void 0, function* () {
+            const tag = yield db_1.TagModel.findOne({ title });
+            if (!tag) {
+                const newtag = yield db_1.TagModel.create({ title });
+                tagIds.push(newtag._id.toString());
+                return;
+            }
+            if (tagIds.includes(tag._id.toString())) {
+                return;
+            }
+            tagIds.push(tag._id.toString());
+        })));
+        //console.log("tags done");
+        yield db_1.ContentModel.create({
+            link: link,
+            type: type,
+            title: title,
+            userId: req.userId,
+            tags: tagIds,
+        });
+        // console.log("model done");
+        res.status(200).json({ message: "Content added" });
+    }
+    catch (e) {
+        console.log(e);
+        res.status(500).json({
+            error: "Error occured"
+        });
+    }
 }));
 app.get("/api/v1/content", middleware_1.userMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
-    const content = yield db_1.ContentModel.find({
+    const contents = yield db_1.ContentModel.find({
         userId: userId,
-    }).populate("userId", "username");
-    res.json({
-        content
+    }).populate("tags");
+    const formattedcontent = contents.map((content) => ({
+        id: content._id,
+        type: content.type,
+        link: content.link,
+        title: content.title,
+        tags: content.tags.map((tag) => (tag.title)),
+    }));
+    res.status(200).json({
+        contents: formattedcontent
     });
 }));
 app.delete("/api/v1/content", middleware_1.userMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -152,8 +177,8 @@ app.post("/api/v1/brain/share", middleware_1.userMiddleware, (req, res) => __awa
             userId: req.userId
         });
         if (existinglink) {
-            res.json({
-                hash: existinglink.hash
+            res.status(200).json({
+                link: `${exports.FRONTEND_URL}/brain/${existinglink.hash}`,
             });
             return;
         }
@@ -162,8 +187,8 @@ app.post("/api/v1/brain/share", middleware_1.userMiddleware, (req, res) => __awa
             userId: req.userId,
             hash: hashlink
         });
-        res.json({
-            hashlink
+        res.status(200).json({
+            link: `${exports.FRONTEND_URL}/brain/${hashlink}`
         });
     }
     else {
@@ -207,6 +232,7 @@ function main() {
     return __awaiter(this, void 0, void 0, function* () {
         yield mongoose_1.default.connect(process.env.DB_URL);
         app.listen(3000);
+        console.log("Running on 3000");
     });
 }
 main();

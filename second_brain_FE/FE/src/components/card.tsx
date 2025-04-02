@@ -69,7 +69,7 @@ const Card = memo(
                     src={`https://youtube.com/embed/${
                         content.link.split("https://youtube/")[1]
                     }`}
-                    className=""/>
+                    className="w-full h-full rounded-md"/>
                 )}
 
 

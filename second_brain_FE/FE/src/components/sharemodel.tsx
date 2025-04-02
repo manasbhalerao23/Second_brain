@@ -9,7 +9,7 @@ function ShareModel() {
     async function handlecopylink(){
         try{
             const response = await axios.post(
-                `${BACKEND_URL}/brain/share`,
+                `${BACKEND_URL}/api/v1/brain/share`,
                 {
                     share: true
                 },
@@ -17,6 +17,7 @@ function ShareModel() {
                     withCredentials: true
                 }
             );
+
             navigator.clipboard.writeText(response.data.link);
             setismodelopen(!ismodelopen);
         }
