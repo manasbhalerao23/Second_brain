@@ -9,8 +9,9 @@ export default {
       colors :{
         gray: {
           100:'#eeeeef',
-          200:'#e6e9ed',
-          600:'#95989c'
+          200:'#888888',
+          500:'#181818',
+          700: '#211F1F'
         },
         purple: {
           200: '#d9ddee',
@@ -20,7 +21,8 @@ export default {
         black :{
           50: '#28272F',
           100: '#07060F'
-        }
+        },
+        primary :'#2d22c7'
       }
     },
   },

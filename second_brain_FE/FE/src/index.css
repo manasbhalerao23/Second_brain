@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* @theme{
+    --color-primary: #FF6363;
+    --color-primary-dark: #FF5454;
+    --font-secondary: "Instrument Serif", serif;
+    --font-primary: "Instrument Sans", serif;
+} */
