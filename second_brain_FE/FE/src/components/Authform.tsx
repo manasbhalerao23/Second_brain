@@ -96,16 +96,16 @@ function AuthForm({ endpoint }: AuthFormProps) {
       </button>
 
       {endpoint === "signin" ? (
-        <p className="text-gray-600 text-sm">
+        <p className="text-gray-400 text-sm">
           Don't have an account?
-          <Link to="/signup" className="text-primary font-medium hover:underline ml-1">
+          <Link to="/signup" className="text-blue-500 font-semibold hover:underline ml-1">
             Sign up
           </Link>
         </p>
       ) : (
-        <p className="text-gray-600 text-sm">
+        <p className="text-gray-400 text-sm">
           Already have an account?
-          <Link to="/signin" className="text-primary font-medium hover:underline ml-1">
+          <Link to="/signin" className="text-blue-500 font-semibold hover:underline ml-1">
             Sign in
           </Link>
         </p>

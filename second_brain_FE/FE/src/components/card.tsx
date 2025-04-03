@@ -39,15 +39,17 @@ const Card = memo(
         }
 
         return(
-            <div>
-                <div>
-                    <div>
-                        <p>{getIcon()}</p>
-                        <p>
+            <div className="h-full text-gray-200 bg-gray-700 border-2 border-white/10 px-4 py-2 rounded-md flex flex-col justify-start items-start gap-5">
+                <div className="w-full flex justify-between items-start gap-3">
+                    <div className="flex justify-center items-start gap-3">
+                        <p className="pt-1">{getIcon()}</p>
+                        <p className="text-lg font-medium break-words line-clamp-3">
                             {content.title}
                         </p>
                     </div>
-                    {!shared && (<div onClick={handledelete}>
+                    {!shared && (<div 
+                    className="hover:bg-white/20 rounded-full p-1 transition-all duration-200 cursor-pointer"
+                    onClick={handledelete}>
                         <Trash size={16}/>
                         </div>)}
                 </div>
@@ -55,15 +57,16 @@ const Card = memo(
                 <a
                 target="blank"
                 href={content.link}
-                className="">
+                className="break-all line-clamp-2">
                     {content.link}
                 </a>
 
                 {content.type === "Image" && (
-                    <img alt="" src={content.link} className=""/>
+                    <img alt="" src={content.link} className="rounded-md"/>
                 )}
 
                 {/* check for youtube embed */}
+
                 {content.type === "Video" && (
                     <iframe
                     src={`https://youtube.com/embed/${
@@ -74,9 +77,9 @@ const Card = memo(
 
 
                 {content.type === "Tweet" && (
-                    <div className="">
+                    <div className="hidden md:block">
                         <blockquote
-                        className=""
+                        className="twitter-tweet w-full h-full"
                         style={{margin:0}}>
                             <a
                             href={`https://twitter.com/x/status/${
@@ -87,11 +90,11 @@ const Card = memo(
                     </div>
                 )}
 
-                <div>
+                <div className="flex flex-wrap gap-3">
                     {content.tags.map((tag,index) => (
                         <p
                         key={index}
-                        className="">
+                        className="bg-primary/20 border-2 border-primary w-fit px-4 py-1 rounded-full text-sm">
                             {tag}
                         </p>
                     ))}

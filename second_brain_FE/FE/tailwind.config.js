@@ -22,7 +22,8 @@ export default {
           50: '#28272F',
           100: '#07060F'
         },
-        primary :'#2d22c7'
+        primary :'#4b5eff',
+        "primary-dark" : '#2638c2'
       }
     },
   },

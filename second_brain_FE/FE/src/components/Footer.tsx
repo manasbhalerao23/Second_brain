@@ -7,7 +7,7 @@ function Footer() {
         <h1 className="">Brainly</h1>
         <a
           target="_blank"
-          href="https://github.com/DevanshBhavsar3/Brainly"
+          href="https://github.com/manasbhalerao_23/Brainly"
           className="hover:bg-white/10 rounded-full p-1 transition-all duration-200"
         >
           <Github />
