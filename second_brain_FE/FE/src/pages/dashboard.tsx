@@ -25,14 +25,14 @@ function Dashboard() {
 
 
   return(
-    <main className="min-h-screen flex bg-white text-black-50 font-primary">
+    <main className="min-h-screen flex bg-black-100 text-white font-primary">
       <SideBar
       isvisible={sidebarvisible}
       setisvisible={setsidebarvisible}
       />
       <div className="w-full flex flex-col justify-start items-start mx-5 mb-5">
         <div className="w-full flex flex-col md:flex-row justify-between items-center mb-5">
-          <h1 className="text-3xl font-semibold text-black-50 my-6">
+          <h1 className="text-3xl font-semibold text-white my-6">
             {contentsState.contents.username || "Your"} Contents
           </h1>
           {params.shareId ? (

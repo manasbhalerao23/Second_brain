@@ -5,14 +5,9 @@ import { BACKEND_URL } from "../config";
 import { ReactElement } from "react";
 import { useRecoilState } from "recoil";
 import { currentTabAtom } from "../atoms/contentAtom";
+import {motion} from "framer-motion";
 
-function SideBar({
-    isvisible,
-    setisvisible
-} : {
-    isvisible: boolean;
-    setisvisible: (visibility: boolean) => void;
-}) {
+function SideBar({ isvisible, setisvisible }: { isvisible: boolean; setisvisible: (visibility: boolean) => void; }) {
     const navigate = useNavigate();
     const tabs = [
         { title: "All", icon: <Layers size={18} /> },
@@ -24,65 +19,84 @@ function SideBar({
     ];
 
     async function handleLogout() {
-        try{
+        try {
             axios.post(`${BACKEND_URL}/logout`);
             localStorage.removeItem("isblogin");
-
             navigate('/');
-        }
-        catch(e){
+        } catch (e) {
             console.log(e);
         }
     }
 
-    if(!isvisible){
-        return(
-            <button className="absolute md:static hover:bg-white/20 rounded-r-full py-1 self-start mt-5 cursor-pointer"
-            onClick={() => setisvisible(!isvisible)}>
-                <AlignJustify/>
+    if (!isvisible) {
+        return (
+            <button className="p-2 absolute md:static hover:bg-white/20 rounded-r-full py-1 self-start mt-5 cursor-pointer transition-all duration-200" onClick={() => setisvisible(!isvisible)}>
+                <AlignJustify />
             </button>
         );
     }
 
     return (
-        <div className="fixed md:sticky top-0 w-full md:w-1/5 bg-gray-700 text-gray-200 h-screen px-4 py-2 border-r-2 border-r-black/10 transition-all flex flex-col">
-            <h1 className="w-full text-lg font-semibold text-black-50 cursor-pointer my-3 flex justify-between items-center">
-                <Link to={'/'}>Second Brain</Link>
-                <div className="hover:bg-black/20 rounded-full transition-all duration-200"
-                onClick={() => setisvisible(!isvisible)}>
-                    <AlignJustify/>
-                </div>
-            </h1>
-            
-            <ul className="flex flex-1 flex-col justify-start items-start gap-2 font-medium">
-                {tabs.map((tab,index) => (
-                    <TabButton key={index} title={tab.title} icon={tab.icon}/>
+        <motion.div 
+            initial={{ x: -200, opacity: 0 }} 
+            animate={isvisible ? { x: 0, opacity: 1 } : { x: -200, opacity: 0 }} 
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="fixed md:sticky top-0 w-64 bg-gray-800 text-gray-200 h-screen px-5 py-3 border-r border-gray-700 flex flex-col"
+        >
+            <div className="flex justify-between items-center w-full mb-4">
+                <Link to={'/'} className="text-xl font-bold text-white">Second Brain</Link>
+                <motion.button 
+                    whileTap={{ scale: 0.9 }}
+                    className="p-2 hover:bg-gray-700 rounded-full transition-all duration-200" 
+                    onClick={() => setisvisible(!isvisible)}
+                >
+                    <AlignJustify size={22} />
+                </motion.button>
+            </div>
+
+            <motion.ul 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.7, ease: "easeInOut" }}
+                className="flex flex-1 flex-col gap-2"
+            >
+                {tabs.map((tab, index) => (
+                    <motion.div 
+                        key={index} 
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                    >
+                        <TabButton title={tab.title} icon={tab.icon} />
+                    </motion.div>
                 ))}
-            </ul>
+            </motion.ul>
 
             {localStorage.getItem("isblogin") && (
-                    <button className="items-center justify-center flex gap-2 w-full mt-auto px-2 py-1 cursor-pointer transition-all duration-200 rounded-md bg-primary/20 text-center text-sm hover:bg-primary text-red-700 hover:text-red-500"
-                    onClick={handleLogout}>
-                        <LogOut/>
-                        Logout
-                    </button>
+                <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className="flex items-center justify-center gap-2 w-full mt-auto px-3 py-2 rounded-md bg-red-600 hover:bg-red-500 text-white transition-all duration-200" 
+                    onClick={handleLogout}
+                >
+                    <LogOut size={18} />
+                    Logout
+                </motion.button>
             )}
-        </div>
+        </motion.div>
     );
 }
 
-function TabButton({title, icon}: {
-    title: string;
-    icon: ReactElement;
-}) {
+function TabButton({ title, icon }: { title: string; icon: ReactElement; }) {
     const [currentTab, setcurrentTab] = useRecoilState(currentTabAtom);
 
-    return(
+    return (
         <li
-        className={`w-full px-2 py-1 flex items-center gap-2 cursor-pointer transition-all duration-200 rounded-md ${currentTab === title ? "bg-white text-black" : "hover:bg-white/5"}`}
-        onClick={() => setcurrentTab(title)}>
+            className={`w-full px-3 py-2 flex items-center gap-3 cursor-pointer transition-all duration-200 rounded-md ${currentTab === title ? "bg-white text-black" : "hover:bg-white/10"}`}
+            onClick={() => setcurrentTab(title)}>
             {icon}
-            {title}
+            <span className="text-sm font-medium">{title}</span>
         </li>
     );
 }
