@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { contentdata } from "../types";
 import axios from "axios";
 import { BACKEND_URL } from "../config";
@@ -6,6 +6,17 @@ import { Clapperboard, FileText, Image, Link2, Trash, Twitter } from "lucide-rea
 
 const Card = memo(
     ({content, shared} : {content: contentdata; shared: boolean}) => {
+        
+        useEffect(() => {
+            const interval = setInterval(() => {
+                if (window.twttr && window.twttr.widgets) {
+                    window.twttr.widgets.load();
+                    clearInterval(interval);
+                  }
+                },300);
+                return () => clearInterval(interval);
+            }, []);
+
         async function handledelete () {
             try{
                 await axios.delete(`${BACKEND_URL}/api/v1/content`,
@@ -16,11 +27,22 @@ const Card = memo(
                         withCredentials: true
                     }
                 );
-                window.location.reload();
+                console.log(content.id);
+                //window.location.reload();
             }
             catch(e){
                 console.log(e);
             }
+        }
+
+        function getYoutubeEmbed (url: string) {
+            const standard = url.match(/(?:youtube\.com\/watch\?v=)([^&]+)/);
+            if(standard) return standard[1];
+
+            const short = url.match(/(?:youtu\.be\/)([^?&]+)/);
+            if(short) return short[1];
+
+            return null;
         }
 
         function getIcon() {
@@ -62,30 +84,41 @@ const Card = memo(
                 </a>
 
                 {content.type === "Image" && (
-                    <img alt="" src={content.link} className="rounded-md"/>
+                    <img alt="" src={content.link} className="rounded-md w-full object-cover"/>
                 )}
 
                 {/* check for youtube embed */}
 
-                {content.type === "Video" && (
-                    <iframe
-                    src={`https://youtube.com/embed/${
-                        content.link.split("https://youtube/")[1]
-                    }`}
-                    className="w-full h-full rounded-md"/>
-                )}
+                {content.type === "Video" && (() => {
+                    const videoId = getYoutubeEmbed(content.link);
+                    
+                    return videoId ? (
+                        <div className="w-full max-h-[150px] overflow-hidden">
+                        <iframe
+                            src={`https://www.youtube.com/embed/${videoId}`}
+                            className="w-full h-full rounded-md"
+                            allowFullScreen
+                        />
+                    </div>
+                    ) : null
+                }
+                )()}
 
 
                 {content.type === "Tweet" && (
-                    <div className="hidden md:block">
+                    <div className="hidden md:block overflow-hidden max-h-[150px]">
                         <blockquote
-                        className="twitter-tweet w-full h-full"
+                        className="twitter-tweet w-full"
                         style={{margin:0}}>
                             <a
                             href={`https://twitter.com/x/status/${
                                 content.link.split("/status/")[1]
                             }`}>
                             </a>
+                            {/* easy way */}
+                            {/* <a
+                            href={content.link}>
+                            </a> */}
                         </blockquote>
                     </div>
                 )}

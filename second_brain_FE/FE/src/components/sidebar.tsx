@@ -35,7 +35,7 @@ function SideBar({ isvisible, setisvisible }: { isvisible: boolean; setisvisible
             </button>
         );
     }
-
+ 
     return (
         <motion.div 
             initial={{ x: -200, opacity: 0 }} 
@@ -44,7 +44,7 @@ function SideBar({ isvisible, setisvisible }: { isvisible: boolean; setisvisible
             className="fixed md:sticky top-0 w-64 bg-gray-800 text-gray-200 h-screen px-5 py-3 border-r border-gray-700 flex flex-col"
         >
             <div className="flex justify-between items-center w-full mb-4">
-                <Link to={'/'} className="text-xl font-bold text-white">Second Brain</Link>
+                <Link to={'/'} className="text-xl font-bold text-primary">Second Brain</Link>
                 <motion.button 
                     whileTap={{ scale: 0.9 }}
                     className="p-2 hover:bg-gray-700 rounded-full transition-all duration-200" 

@@ -20,7 +20,7 @@ const UserSchema = new mongoose_1.Schema({
     password: { type: String }
 });
 exports.UserModel = (0, mongoose_1.model)('User', UserSchema);
-const contenttypes = ['Twitter', 'Video'];
+const contenttypes = ['Tweet', 'Video', 'Image'];
 const ContentSchema = new mongoose_1.Schema({
     link: { type: String, required: true },
     type: { type: String, enum: contenttypes, required: true },

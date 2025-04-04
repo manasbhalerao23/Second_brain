@@ -154,12 +154,21 @@ app.get("/api/v1/content", middleware_1.userMiddleware, (req, res) => __awaiter(
     });
 }));
 app.delete("/api/v1/content", middleware_1.userMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const contentId = req.body.contentId;
+    const { id } = req.body;
+    const userId = req.userId;
     try {
-        yield db_1.ContentModel.deleteMany({
-            contentId,
-            userId: req.userId
-        });
+        const content = yield db_1.ContentModel.findOne({ id: id });
+        if (!content) {
+            res.status(400).json({
+                error: "Content not found"
+            });
+        }
+        if ((content === null || content === void 0 ? void 0 : content.userId.toString()) !== userId) {
+            res.status(403).json({
+                error: "Unauthorized access"
+            });
+        }
+        yield db_1.ContentModel.findByIdAndDelete(content === null || content === void 0 ? void 0 : content._id);
         res.status(200).json({
             message: "delete successfull"
         });

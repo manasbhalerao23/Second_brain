@@ -11,7 +11,7 @@ const UserSchema = new Schema({
 
 export const UserModel = model('User', UserSchema);
 
-const contenttypes = ['Twitter','Video'];
+const contenttypes = ['Tweet','Video', 'Image'];
 
 const ContentSchema = new Schema({
     link : {type: String, required: true},

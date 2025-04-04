@@ -16,7 +16,7 @@ function Dashboard() {
     currentTabContentsf(params.shareId || null)
   );
   const [sidebarvisible,setsidebarvisible] = useState(true);
-
+  
   useEffect(()=>{
     if(!localStorage.getItem("isblogin") && !params.shareId){
       navigate('/');
@@ -26,10 +26,12 @@ function Dashboard() {
 
   return(
     <main className="min-h-screen flex bg-black-100 text-white font-primary">
+
       <SideBar
       isvisible={sidebarvisible}
-      setisvisible={setsidebarvisible}
-      />
+      setisvisible={setsidebarvisible}/>
+
+      
       <div className="w-full flex flex-col justify-start items-start mx-5 mb-5">
         <div className="w-full flex flex-col md:flex-row justify-between items-center mb-5">
           <h1 className="text-3xl font-semibold text-white my-6">
@@ -58,7 +60,7 @@ function Dashboard() {
             </>
           ) : contentsState.state === "hasError" ? (
             <div>error while fetching</div>
-          ): contentsState.contents?.contents?.length === 0 ? (
+          ): contentsState.contents.contents.length === 0 ? (
             <div>Empty Brain</div>
           ) : (
             contentsState.contents?.contents?.map((content: contentdata) => (

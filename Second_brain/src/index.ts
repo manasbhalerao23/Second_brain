@@ -112,7 +112,7 @@ app.post("/api/v1/signin", async (req, res) => {
 app.post("/api/v1/content", userMiddleware, async (req, res) => {
     const {link, type, title, tags} = req.body;
 
-    try{
+    try{ 
         const tagIds: string[] = [];
         await Promise.all(
             tags.map(async (title: any) => {
@@ -172,12 +172,25 @@ app.get("/api/v1/content", userMiddleware, async (req, res) => {
 });
 
 app.delete("/api/v1/content", userMiddleware, async (req, res) => {
-    const contentId  = req.body.contentId;
+    const { id }  = req.body;
+    const userId = req.userId;
     try{
-        await ContentModel.deleteMany({
-            contentId,
-            userId: req.userId
-        })
+        const content = await ContentModel.findOne({ id: id});
+
+        if(!content){
+            res.status(400).json({
+                error: "Content not found"
+            });
+        }
+        
+        if(content?.userId.toString() !== userId){
+            res.status(403).json({
+                error: "Unauthorized access"
+            });
+        }
+
+        await ContentModel.findByIdAndDelete(content?._id);
+        
         res.status(200).json({
             message: "delete successfull"
         })
